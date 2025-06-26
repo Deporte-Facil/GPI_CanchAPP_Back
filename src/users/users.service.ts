@@ -15,6 +15,11 @@ import { UpdateUserDto } from './schemas/dto/update-user.dto';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  async createPaymentMethod(data: any): Promise<any> {
+    // Lógica para crear un método de pago
+    
+  }
+
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     // Verificar si el email ya existe
     const existingUser = await this.userModel.findOne({

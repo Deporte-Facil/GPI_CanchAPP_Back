@@ -13,6 +13,12 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Post()
+  createPaymentMethod(@Body() data: any) {
+    return this.usersService.createPaymentMethod(data);
+  }
+
+
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
