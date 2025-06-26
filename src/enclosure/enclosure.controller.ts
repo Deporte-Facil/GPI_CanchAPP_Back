@@ -9,7 +9,14 @@ export class EnclosureController {
 
   @Post()
   create(@Body() createEnclosureDto: CreateEnclosureDto) {
-    return this.enclosureService.create(createEnclosureDto);
+    try{
+      return this.enclosureService.create(createEnclosureDto);
+    } catch (error) {
+      return {
+        message: 'Error creating enclosure',
+        error: error.message,
+      };
+    }
   }
 
   @Get()
