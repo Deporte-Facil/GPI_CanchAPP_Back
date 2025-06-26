@@ -27,7 +27,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @ApiOperation({ summary: 'Crea un nuevo usuario.' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'El usuario ha sido creado exitosamente.',
+    type: User
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Datos de entrada inválidos.' })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Ya existe un usuario con este correo electrónico.' })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserDocument> {
     return this.usersService.create(createUserDto);
   }
 
