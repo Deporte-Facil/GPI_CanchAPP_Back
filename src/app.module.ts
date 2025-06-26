@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { EnclosureModule } from './enclosure/enclosure.module';
 import { PlayesModule } from './playes/playes.module';
 import { FieldModule } from './field/field.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { FieldModule } from './field/field.module';
     ConfigModule.forRoot({
       isGlobal: true, // Disponible en toda la aplicación
     }),
-    
+
     // Conexión a MongoDB
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -22,13 +23,14 @@ import { FieldModule } from './field/field.module';
         uri: configService.get<string>('MONGODB_URI'),
       }),
     }),
-    
+
     // Módulos de la aplicación
     AuthModule,
     UsersModule,
     EnclosureModule,
     PlayesModule,
     FieldModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

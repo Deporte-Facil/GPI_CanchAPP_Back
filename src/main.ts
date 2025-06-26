@@ -17,10 +17,12 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Elimina propiedades que no están en el DTO
-      transform: true,  // Transforma los datos recibidos al tipo del DTO
+      transform: true, // Transforma los datos recibidos al tipo del DTO
     }),
   );
 
+
+  // Prefijo global para todas las rutas de la API
   app.setGlobalPrefix('api');
 
   // Configuración de Swagger
