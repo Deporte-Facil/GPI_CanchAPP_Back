@@ -7,13 +7,9 @@ import { Types } from 'mongoose';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Determina el puerto real de tu frontend.
-  // Es común que el servidor de desarrollo de Next.js (frontend) se ejecute en 3000 o 3001.
-  // Si tu frontend está en http://localhost:3001, el 'origin' debe ser 3001.
-  const FRONTEND_ORIGIN = 'http://localhost:3001'; // <--- VERIFICA ESTO EN LA BARRA DE DIRECCIONES DE TU NAVEGADOR AL EJECUTAR EL FRONTEND
-
+  // Configuración temporal para permitir cualquier origen durante desarrollo
   app.enableCors({
-    origin: FRONTEND_ORIGIN,
+    origin: true, // Permite cualquier origen
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -42,7 +38,7 @@ async function bootstrap() {
   // Debe ser el puerto al que tu frontend (en apiClient.baseURL) intenta conectar.
   // Tu frontend está configurado para llamar a http://localhost:3000/api,
   // así que el backend debe escuchar en el puerto 3000.
-  const BACKEND_PORT = 3000; // <--- PUERTO DONDE TU BACKEND REALMENTE ESCUCHARÁ
+  const BACKEND_PORT = 4000; // <--- PUERTO DONDE TU BACKEND REALMENTE ESCUCHARÁ
 
   await app.listen(BACKEND_PORT, () => {
     console.log(`Aplicación ejecutándose en: http://localhost:${BACKEND_PORT}/api`);
