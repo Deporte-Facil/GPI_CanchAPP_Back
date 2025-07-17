@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiResponse, ApiTags, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { AddPaymentMethodDto } from './schemas/dto/add-payment-method.dto';
 import { User, UserDocument } from './schemas/user.schema'; // <--- CORREGIDO: Ahora importa User y UserDocument
-
+import { Types } from 'mongoose'; 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {

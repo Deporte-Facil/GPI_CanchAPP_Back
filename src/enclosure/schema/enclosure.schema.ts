@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 export type EnclosureDocument = Enclosure & Document;
 
 @Schema({ timestamps: true })
-export class Enclosure {
+export class Enclosure extends Document {
   @Prop({ required: true })
   nombre: string;
 
@@ -43,7 +43,14 @@ export class Enclosure {
 
   @Prop()
   imagen_url: string;
-
+  
+  @Prop({
+    type: String,
+    enum: ['automática', 'manual'],
+    default: 'manual',
+    required: true,
+  })
+  modoConfirmacion: string;
 }
 
 export const EnclosureSchema = SchemaFactory.createForClass(Enclosure);
