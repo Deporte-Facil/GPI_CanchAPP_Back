@@ -1,4 +1,3 @@
-// src/recintos/dto/create-recinto.dto.ts
 import {
   IsString,
   IsBoolean,
@@ -9,6 +8,7 @@ import {
   IsNumberString,
   ValidateNested,
   ArrayMinSize,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateFieldDto } from 'src/field/dto/create-field.dto';
@@ -65,6 +65,11 @@ export class CreateEnclosureDto {
   @IsString()
   @IsOptional()
   imagen_url?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(['automática', 'manual'], { message: 'El modo de confirmación debe ser "automática" o "manual".' })
+  modoConfirmacion: string;
 
   @IsArray()
   @ValidateNested({ each: true })

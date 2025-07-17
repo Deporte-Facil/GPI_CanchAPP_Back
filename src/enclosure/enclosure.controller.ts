@@ -9,14 +9,7 @@ export class EnclosureController {
 
   @Post()
   create(@Body() createEnclosureDto: CreateEnclosureDto) {
-    try{
-      return this.enclosureService.create(createEnclosureDto);
-    } catch (error) {
-      return {
-        message: 'Error creating enclosure',
-        error: error.message,
-      };
-    }
+    return this.enclosureService.create(createEnclosureDto);
   }
 
   @Get()
@@ -26,16 +19,16 @@ export class EnclosureController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.enclosureService.findOne(+id);
+    return this.enclosureService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEnclosureDto: UpdateEnclosureDto) {
-    return this.enclosureService.update(+id, updateEnclosureDto);
+    return this.enclosureService.update(id, updateEnclosureDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.enclosureService.remove(+id);
+    return this.enclosureService.remove(id);
   }
 }
