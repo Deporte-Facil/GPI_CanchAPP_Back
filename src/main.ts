@@ -1,45 +1,52 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'; // Importa Swagger
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Types } from 'mongoose'; 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Habilitar CORS para permitir conexiones desde el frontend
+  // Determina el puerto real de tu frontend.
+  // Es común que el servidor de desarrollo de Next.js (frontend) se ejecute en 3000 o 3001.
+  // Si tu frontend está en http://localhost:3001, el 'origin' debe ser 3001.
+  const FRONTEND_ORIGIN = 'http://localhost:3001'; // <--- VERIFICA ESTO EN LA BARRA DE DIRECCIONES DE TU NAVEGADOR AL EJECUTAR EL FRONTEND
+
   app.enableCors({
-    origin: 'http://localhost:5173', // URL del frontend (Vite usa el puerto 5173 por defecto)
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    origin: FRONTEND_ORIGIN,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  // Configuración global de validación de DTOs
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Elimina propiedades que no están en el DTO
-      transform: true, // Transforma los datos recibidos al tipo del DTO
-    }),
-  );
-
-
-  // Prefijo global para todas las rutas de la API
   app.setGlobalPrefix('api');
 
-  // Configuración de Swagger
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
+  }));
+
   const config = new DocumentBuilder()
-    .setTitle('API de Gestión de Usuarios y Pagos') // Título de tu API
-    .setDescription('Documentación de la API para la gestión de usuarios y métodos de pago') // Descripción
-    .setVersion('1.0') // Versión de la API
-      .addBearerAuth() // Añade soporte para JWT (si usas JwtAuthGuard)
-      // .setBasePath('api') // <--- Esta línea ya no es estrictamente necesaria con setGlobalPrefix
-                            // pero no causa daño si se mantiene; se puede quitar para simplificar.
+    .setTitle('API de Recintos Deportivos')
+    .setDescription('Documentación de la API para la gestión de recintos y reservas.')
+    .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document); // 'api' es la ruta donde se servirá la documentación (ej. http://localhost:3000/api)
+  SwaggerModule.setup('api/docs', app, document);
 
+  // Define el puerto donde el BACKEND escuchará.
+  // Debe ser el puerto al que tu frontend (en apiClient.baseURL) intenta conectar.
+  // Tu frontend está configurado para llamar a http://localhost:3000/api,
+  // así que el backend debe escuchar en el puerto 3000.
+  const BACKEND_PORT = 3000; // <--- PUERTO DONDE TU BACKEND REALMENTE ESCUCHARÁ
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Aplicación ejecutándose en: http://localhost:${port}/api`);
+  await app.listen(BACKEND_PORT, () => {
+    console.log(`Aplicación ejecutándose en: http://localhost:${BACKEND_PORT}/api`);
+    console.log(`Documentación de la API disponible en: http://localhost:${BACKEND_PORT}/api/docs`);
+  });
 }
 bootstrap();

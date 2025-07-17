@@ -1,0 +1,49 @@
+version: '3.8'
+
+networks:
+  app_network:
+    driver: bridge
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb-canchapp-dev
+    ports:
+      - "27017:27017" # Puerto mapeado al host
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    restart: on-failure
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs-backend-canchapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      # CAMBIO CRÍTICO AQUÍ: Usar 127.0.0.1 (localhost del host) en lugar de 'mongodb'
+      # Alternativa a '127.0.0.1' para Docker Desktop: host.docker.internal
+      MONGODB_URI: mongodb://user:password@127.0.0.1:27017/canchapp_db?authSource=admin
+    networks:
+      - app_network
+
+volumes:
+  mongodb_data:

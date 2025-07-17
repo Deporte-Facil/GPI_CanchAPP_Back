@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'; // Asegúrate de importar BadRequestException
 import { CreateEnclosureDto } from './dto/create-enclosure.dto';
 import { UpdateEnclosureDto } from './dto/update-enclosure.dto';
 import { Enclosure, EnclosureDocument } from './schema/enclosure.schema';
 import { Field, FieldDocument } from 'src/field/schema/field.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-
+import { Model, Types } from 'mongoose'; // <-- ¡IMPORTACIÓN NECESARIA AÑADIDA!
 
 @Injectable()
 export class EnclosureService {
@@ -14,70 +13,63 @@ export class EnclosureService {
     @InjectModel(Field.name) private fieldModel: Model<FieldDocument>
   ) {}
 
-
   async create(createEnclosureDto: CreateEnclosureDto) {
-    const canchas : any = createEnclosureDto.canchas.map((cancha) => {
-      return {
-        tipoCancha: cancha.tipoCancha,
-        cantidad: cancha.cantidad,
-        horariosDisponibles: cancha.horariosDisponibles,
-        materialesCancha: cancha.materialesCancha,
-        };
-    });
-
-    const enclosure : any = {
-        id_admin: createEnclosureDto.id_admin,
-        nombre: createEnclosureDto.nombre,
-        tipoDeporte: createEnclosureDto.tipoDeporte,
-        jugadoresMax: createEnclosureDto.jugadoresMax,
-        costo: createEnclosureDto.costo,
-        descripcion: createEnclosureDto.descripcion,
-        materiales: createEnclosureDto.materiales,
-        ubicacion: createEnclosureDto.ubicacion,
-        estacionamiento: createEnclosureDto.estacionamiento,
-        petos: createEnclosureDto.petos,
-        arbitros: createEnclosureDto.arbitros,
-        servicios: createEnclosureDto.servicios,
-        fechaDisponible: createEnclosureDto.fechaDisponible,
-        imagen_url: createEnclosureDto.imagen_url,
-      };
-
-    if (await this.enclosureModel.findOne(enclosure)) return {
-      message: 'Enclosure already exists',
-      enclosure: null,
-    };
+    const canchasDto = createEnclosureDto.canchas; 
     
-    const newEnclosure = await this.enclosureModel.insertOne(enclosure);
+    const enclosureData = {
+      ...createEnclosureDto,
+      canchas: undefined 
+    };
+    delete enclosureData.canchas; 
+
+    const newEnclosure = new this.enclosureModel(enclosureData);
+    await newEnclosure.save();
+    
     const idEnclosure = newEnclosure._id;
 
-    canchas.forEach((cancha : any) => {
-      cancha.enclosureId = idEnclosure;
-    });
+    const canchasToInsert = canchasDto.map((canchaDto) => ({
+      ...canchaDto, 
+      enclosureId: idEnclosure,
+      cantidad: parseInt(canchaDto.cantidad, 10), 
+    }));
     
-    const newCanchas = await this.fieldModel.insertMany(canchas);
+    const newCanchas = await this.fieldModel.insertMany(canchasToInsert);
 
     return {
       message: 'Enclosure created successfully',
-      enclosure: {
-        enclosure: newEnclosure,
-        canchas: newCanchas,
-      },
+      enclosure: newEnclosure,
+      canchas: newCanchas,
     };
   }
 
-  findAll() {
-    return `This action returns all enclosure`;
+  async findAll(): Promise<EnclosureDocument[]> {
+    const enclosures = await this.enclosureModel.find().lean().exec();
+    
+    const enclosuresWithFields = await Promise.all(
+      enclosures.map(async (enclosure) => {
+        const canchas = await this.fieldModel.find({ enclosureId: enclosure._id }).exec();
+        return { ...enclosure, canchas: canchas.map(c => c.toObject({ getters: true, virtuals: true })) }; 
+      })
+    );
+    return enclosuresWithFields as EnclosureDocument[]; 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} enclosure`;
+  async findOne(id: string) {
+    // Añadir validación del ObjectId antes de buscar
+    if (!Types.ObjectId.isValid(id)) { // <-- Types ahora disponible
+      console.error('ERROR: ID de recinto inválido en findOne:', id);
+      throw new BadRequestException('ID de recinto inválido.'); 
+    }
+    return this.enclosureModel.findById(id).exec();
   }
 
-  update(id: number, updateEnclosureDto: UpdateEnclosureDto) {
-    return `This action updates a #${id} enclosure`;
+  update(id: string, updateEnclosureDto: UpdateEnclosureDto) {
+    const enclosureData = { ...updateEnclosureDto } as any;
+    delete enclosureData.canchas; 
+    return this.enclosureModel.findByIdAndUpdate(id, enclosureData, { new: true });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} enclosure`;
+  remove(id: string) {
+    return this.enclosureModel.findByIdAndDelete(id);
   }
 }

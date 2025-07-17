@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Enclosure, EnclosureSchema } from './schema/enclosure.schema';
 import { Field, FieldSchema } from 'src/field/schema/field.schema';
 
-
 @Module({
   controllers: [EnclosureController],
   providers: [EnclosureService],
@@ -13,5 +12,6 @@ import { Field, FieldSchema } from 'src/field/schema/field.schema';
     MongooseModule.forFeature([{ name: Enclosure.name, schema: EnclosureSchema }]),
     MongooseModule.forFeature([{ name: Field.name, schema: FieldSchema }]),
   ],
+  exports: [EnclosureService], // Exportamos para que otros módulos lo puedan inyectar
 })
 export class EnclosureModule {}
