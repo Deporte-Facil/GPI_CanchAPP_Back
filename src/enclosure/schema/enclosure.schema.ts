@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { User } from '../../users/schemas/user.schema'; // Importar el modelo User
 
 export type EnclosureDocument = Enclosure & Document;
 
@@ -43,7 +44,7 @@ export class Enclosure extends Document {
 
   @Prop()
   imagen_url: string;
-  
+
   @Prop({
     type: String,
     enum: ['automática', 'manual'],
@@ -51,6 +52,10 @@ export class Enclosure extends Document {
     required: true,
   })
   modoConfirmacion: string;
+
+  // ¡NUEVO CAMPO! Referencia al usuario administrador que creó el recinto
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  admin: User;
 }
 
 export const EnclosureSchema = SchemaFactory.createForClass(Enclosure);
